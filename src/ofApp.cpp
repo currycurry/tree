@@ -9,7 +9,7 @@ void ofApp::setup(){
     _showState = 0;
     bPlaying = false;
     bDebug = false;
-    bFullscreen = false;
+    bFullscreen = true;
     
     // === OSC =============================
 
@@ -59,18 +59,27 @@ void ofApp::setup(){
     
     // === FBO =============================
     
-    fbo.allocate( ofGetHeight(), ofGetHeight(), GL_RGBA );
-    treeTexture.allocate( ofGetHeight(), ofGetHeight(), GL_RGBA );
+    fbo.allocate( 1600, 1600, GL_RGBA );
+    treeTexture.allocate( 1600, 1600, GL_RGBA );
+
     
-    points[ 0 ].x = 0; points[ 0 ].y = 0;
+    //fbo.allocate( ofGetHeight(), ofGetHeight(), GL_RGBA );
+    //treeTexture.allocate( ofGetHeight(), ofGetHeight(), GL_RGBA );
+    
+    /*points[ 0 ].x = 0; points[ 0 ].y = 0;
     points[ 1 ].x = ofGetHeight(); points[ 1 ].y = 0;
     points[ 2 ].x = ofGetHeight(); points[ 2 ].y = ofGetHeight();
     points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
     
-    /*points[ 0 ].x = 0; points[ 0 ].y = 925;
+    points[ 0 ].x = 0; points[ 0 ].y = 925;
     points[ 1 ].x = 1600; points[ 1 ].y = 930;
     points[ 2 ].x = 1600; points[ 2 ].y = 2580;
     points[ 3 ].x = 0; points[ 3 ].y = 2520;*/
+    
+    points[ 0 ].x = 0; points[ 0 ].y = ofGetHeight() - tree_video.getHeight();
+    points[ 1 ].x = ofGetWidth(); points[ 1 ].y = ofGetHeight() - tree_video.getHeight();
+    points[ 2 ].x = ofGetWidth(); points[ 2 ].y = ofGetHeight();
+    points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
     
     ofBackground( 0 );
     
@@ -82,7 +91,7 @@ void ofApp::setup(){
     
     frame_w = tree_video.getWidth() / tree_video.getHeight() * fbo.getHeight();
     frame_h = fbo.getHeight();
-    frame_x = ( fbo.getWidth() - frame_w ) / 2;
+    frame_x = -15; //( fbo.getWidth() - frame_w ) / 2;
     frame_y = ( fbo.getHeight() - frame_h );
     
     video_opacity = 255;
@@ -484,17 +493,27 @@ void ofApp::mouseExited(int x, int y){
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
     
-    frame_w = tree_video.getWidth() / tree_video.getHeight() * fbo.getHeight();
+    /*frame_w = tree_video.getWidth() / tree_video.getHeight() * fbo.getHeight();
     frame_h = fbo.getHeight();
     frame_x = ( fbo.getWidth() - frame_w ) / 2;
-    frame_y = ( fbo.getHeight() - frame_h );
+    frame_y = ( fbo.getHeight() - frame_h );*/
     
         cout << "( x, y, w, h ): " << "( " << frame_x << ", " << frame_y << ", " << frame_w << ", " << frame_h << " )" << endl;
     
-    points[ 0 ].x = 0; points[ 0 ].y = 0;
-    points[ 1 ].x = ofGetHeight(); points[ 1 ].y = 0;
-    points[ 2 ].x = ofGetHeight(); points[ 2 ].y = ofGetHeight();
-    points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
+    
+    if ( bFullscreen ) {
+        points[ 0 ].x = 0; points[ 0 ].y = 925;
+        points[ 1 ].x = 1600; points[ 1 ].y = 930;
+        points[ 2 ].x = 1600; points[ 2 ].y = 2505;
+        points[ 3 ].x = 0; points[ 3 ].y = 2475;
+    }
+    
+    else {
+        points[ 0 ].x = 0; points[ 0 ].y = ofGetHeight() - tree_video.getHeight();
+        points[ 1 ].x = ofGetWidth(); points[ 1 ].y = ofGetHeight() - tree_video.getHeight();
+        points[ 2 ].x = ofGetWidth(); points[ 2 ].y = ofGetHeight();
+        points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
+    }
     
 
 }
