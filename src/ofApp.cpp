@@ -1,5 +1,11 @@
 #include "ofApp.h"
 
+/*show state:
+ 0 idle
+ 1 transition to playing
+ 2 playing
+ 3 transition to idle */
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -44,14 +50,14 @@ void ofApp::setup(){
     toBottomColor = ofColor( 0 );
 
     // === Audio =============================
-    idle_audio.load( "idle_audio_1.aiff" );
+    idle_audio.load( "Tree_External_Idle.wav" );
     idle_audio.setLoop( true );
     idle_volume = 0.0;
     idle_max_volume = .60;
     idle_audio.setVolume( idle_volume );
     idle_audio.play();
 
-    tree_audio.load( "tree_audio.mp3" );
+    tree_audio.load( "Tree_External_Main.wav" );
     tree_audio.setLoop( false );
     tree_volume = 0.0;
     tree_audio.setVolume( tree_volume );
@@ -81,6 +87,13 @@ void ofApp::setup(){
     points[ 2 ].x = ofGetWidth(); points[ 2 ].y = ofGetHeight();
     points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
     
+    cout << "( 0.x, 0.y ): " << "( " << points[ 0 ].x << ", " << points[ 0 ].y << " ) " << endl;
+    cout << "( 1.x, 1.y ): " << "( " << points[ 1 ].x << ", " << points[ 1 ].y << " ) " << endl;
+    cout << "( 2.x, 2.y ): " << "( " << points[ 2 ].x << ", " << points[ 2 ].y << " ) " << endl;
+    cout << "( 3.x, 3.y ): " << "( " << points[ 3 ].x << ", " << points[ 3 ].y << " ) " << endl;
+    
+    
+    
     ofBackground( 0 );
     
     // === Video =============================
@@ -94,9 +107,18 @@ void ofApp::setup(){
     frame_x = -15; //( fbo.getWidth() - frame_w ) / 2;
     frame_y = ( fbo.getHeight() - frame_h );
     
-    video_opacity = 255;
+    tree_opacity = 255;
     
     cout << "( x, y, w, h ): " << "( " << frame_x << ", " << frame_y << ", " << frame_w << ", " << frame_h << " )" << endl;
+    
+    idle_video.setPixelFormat( OF_PIXELS_RGBA );
+    idle_video.load("night_sky_rough.mov");
+    idle_video.setLoopState( OF_LOOP_PALINDROME );
+    
+    idle_w = idle_video.getWidth() / idle_video.getHeight() * fbo.getHeight();
+    idle_h = fbo.getHeight();
+    idle_x = ( fbo.getWidth() - idle_w ) / 2;
+    idle_y = ( fbo.getHeight() - idle_h );
 
 
 }
@@ -120,6 +142,60 @@ void ofApp::update(){
         
     }
     
+    /////////play triggered
+    if ( showState == 1 && _showState != 1) {
+        
+        cout << "playing" << endl;
+        bPlaying = true;
+        startTime = ofGetSystemTime();
+        currentTime = startTime;
+        lastTime = 0;
+        colorTime = 0;
+        colorPosition = 0;
+        cycles = 0;
+        lastColorIndex = 0;
+        nextColorIndex = 0;
+        
+        tree_audio.setPosition( 0.0 );
+        tree_audio.setVolume( 0.0 );
+        tree_audio.play();
+        
+        tree_video.setPosition( 0.0 );
+        tree_opacity = 255;
+        tree_video.play();
+        
+    }
+    
+    /////////stop triggered
+    else if ( showState == 0 && _showState != 0 ) {
+        cout << "stopping" << endl;
+        bPlaying = false;
+        idle_audio.play();
+        idle_audio.setVolume( 0 );
+        
+        idle_video.play();
+        idle_opacity = 0;
+        
+        toTopColor = ofColor( 0 );
+        toBottomColor = ofColor( 0 );
+        transSpeed = 0.0;
+        
+        startTime = ofGetSystemTime();
+        currentTime = startTime;
+        lastTime = 0;
+        colorTime = 0;
+        colorPosition = 0;
+        cycles = 0;
+        lastColorIndex = 0;
+        nextColorIndex = 0;
+    }
+    
+    if ( showState == 0 ) {
+        idle_video.update();
+        
+    }
+    
+
     
     
     //tree state
@@ -205,9 +281,9 @@ void ofApp::update(){
         }
         
         currentTopColor = fromTopColor.getLerped( toTopColor, transSpeed );
-        video_opacity = (int) transSpeed * 255;
+        tree_opacity = (int) transSpeed * 255;
         
-        if ( video_opacity <= 0 ) {
+        if ( tree_opacity <= 0 ) {
             tree_video.stop();
             tree_video.setPosition( 0.0 );
         }
@@ -217,9 +293,8 @@ void ofApp::update(){
             idle_volume += .005;
             idle_audio.setVolume( idle_volume );
             //cout << "idle_volume: " << idle_volume << endl;
-
-            
         }
+        
         if ( tree_volume > 0 ) {
             tree_volume -= .005;
             tree_audio.setVolume( tree_volume );
@@ -230,51 +305,6 @@ void ofApp::update(){
             tree_audio.stop();
             tree_audio.setPosition( 0.0 );
         }
-    }
-    
-    /////////play triggered
-    if ( showState == 1 && _showState != 1) {
-        
-        cout << "playing" << endl;
-        bPlaying = true;
-        startTime = ofGetSystemTime();
-        currentTime = startTime;
-        lastTime = 0;
-        colorTime = 0;
-        colorPosition = 0;
-        cycles = 0;
-        lastColorIndex = 0;
-        nextColorIndex = 0;
-        
-        tree_audio.setPosition( 0.0 );
-        tree_audio.setVolume( 0.0 );
-        tree_audio.play();
-        
-        tree_video.setPosition( 0.0 );
-        video_opacity = 255;
-        tree_video.play();
-        
-    }
-    
-    /////////stop triggered
-    else if ( showState == 0 && _showState != 0 ) {
-        cout << "stopping" << endl;
-        bPlaying = false;
-        idle_audio.play();
-        idle_audio.setVolume( 0 );
-        
-        toTopColor = ofColor( 0 );
-        toBottomColor = ofColor( 0 );
-        transSpeed = 0.0;
-        
-        startTime = ofGetSystemTime();
-        currentTime = startTime;
-        lastTime = 0;
-        colorTime = 0;
-        colorPosition = 0;
-        cycles = 0;
-        lastColorIndex = 0;
-        nextColorIndex = 0;
     }
     
     
@@ -289,12 +319,17 @@ void ofApp::update(){
 void ofApp::drawFbo(){
     
     fbo.begin();
-    ofClear(255,255,255, 0);
     
+    ofClear(255,255,255, 0);
     ofEnableAlphaBlending();
     ofBackgroundGradient( currentTopColor, currentBottomColor, OF_GRADIENT_LINEAR );
-    ofSetColor( 255, 255, 255, video_opacity );
+    
+    ofSetColor( 255, 255, 255, idle_opacity );
+    idle_video.draw( idle_x, idle_y, idle_w, idle_h );
+    
+    ofSetColor( 255, 255, 255, tree_opacity );
     tree_video.draw( frame_x, frame_y, frame_w, frame_h );
+    
     ofDisableAlphaBlending();
     
     
@@ -506,6 +541,13 @@ void ofApp::windowResized(int w, int h){
         points[ 1 ].x = 1600; points[ 1 ].y = 930;
         points[ 2 ].x = 1600; points[ 2 ].y = 2505;
         points[ 3 ].x = 0; points[ 3 ].y = 2475;
+        
+        /*points[ 0 ].x = 0; points[ 0 ].y = 0;
+        points[ 1 ].x = ofGetHeight(); points[ 1 ].y = 0;
+        points[ 2 ].x = ofGetHeight(); points[ 2 ].y = ofGetHeight();
+        points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();*/
+        
+        
     }
     
     else {
@@ -513,6 +555,11 @@ void ofApp::windowResized(int w, int h){
         points[ 1 ].x = ofGetWidth(); points[ 1 ].y = ofGetHeight() - tree_video.getHeight();
         points[ 2 ].x = ofGetWidth(); points[ 2 ].y = ofGetHeight();
         points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();
+        
+        /*points[ 0 ].x = 0; points[ 0 ].y = 0;
+        points[ 1 ].x = ofGetHeight(); points[ 1 ].y = 0;
+        points[ 2 ].x = ofGetHeight(); points[ 2 ].y = ofGetHeight();
+        points[ 3 ].x = 0; points[ 3 ].y = ofGetHeight();*/
     }
     
 

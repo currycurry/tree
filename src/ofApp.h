@@ -91,7 +91,8 @@ public:
     ofVideoPlayer tree_video;
     
     int frame_x, frame_y, frame_w, frame_h;
-    int video_opacity;
+    int idle_x, idle_y, idle_w, idle_h;
+    int tree_opacity, idle_opacity;
     
     
     // === FBO =============================
